@@ -174,13 +174,29 @@ fun VoiceScreen() {
 class ChatVM : ViewModel() {
     val msgs = mutableStateListOf<Pair<Boolean, String>>()
     var busy by mutableStateOf(false)
+    private var lastHistory: List<Pair<Boolean, String>> = emptyList()
 
     fun send(text: String) {
         if (text.isBlank() || busy) return
         msgs.add(true to text)
+        lastHistory = msgs.toList()
+        requestReply(lastHistory)
+    }
+
+    fun retry() {
+        if (!busy && lastHistory.isNotEmpty()) requestReply(lastHistory)
+    }
+
+    private fun requestReply(history: List<Pair<Boolean, String>>) {
         busy = true
         viewModelScope.launch {
-            val r = try { ChatEngine.reply(msgs.toList()) } catch (_: Exception) { "Star could not connect right now. Check your internet connection and try again." }
+            val r = try {
+                ChatEngine.reply(history)
+            } catch (e: IllegalArgumentException) {
+                e.message ?: "Check the Gemini API key in Settings."
+            } catch (_: Exception) {
+                "Star could not connect right now. Check your internet connection and try again."
+            }
             msgs.add(false to r)
             busy = false
         }
@@ -215,6 +231,10 @@ fun ChatScreen(vm: ChatVM = viewModel()) {
                 }
             }
             if (vm.busy) item { Text("Star is thinking…", color = Color.Gray) }
+            val lastReply = vm.msgs.lastOrNull()?.second.orEmpty()
+            if (!vm.busy && (lastReply.startsWith("Gemini ") || lastReply.startsWith("Star could not"))) {
+                item { Text("Try again", color = CYAN, modifier = Modifier.clickable { vm.retry() }.padding(8.dp)) }
+            }
         }
         Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(input, { input = it }, Modifier.weight(1f), placeholder = { Text("Message") }, maxLines = 4)

@@ -116,7 +116,7 @@ fun StarApp() {
 fun VoiceScreen() {
     val ctx = LocalContext.current
     val state by StarCore.state.collectAsState()
-    val caption by VisionCore.caption.collectAsState()
+    val caption by StarCore.caption.collectAsState()
 
     val color = when (state) {
         LiveState.Disconnected -> Color(0xFF555B66)

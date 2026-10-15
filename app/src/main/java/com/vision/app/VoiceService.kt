@@ -1,4 +1,4 @@
-package com.vision.app
+package com.star.app
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -40,13 +40,13 @@ class VoiceService : Service() {
         session = LiveSession(
             this,
             onState = { s ->
-                VisionCore.state.value = s
+                StarCore.state.value = s
                 if (s == LiveState.Disconnected) stopSelf()
             },
             onCaption = { text, user ->
                 buf = if (lastUser == user) buf + text else text
                 lastUser = user
-                VisionCore.caption.value = (if (user) "You: " else "Vision: ") + buf
+                StarCore.caption.value = (if (user) "You: " else "Star: ") + buf
             }
         ).also { it.connect(Prefs.apiKey, Prefs.voice) }
         return START_NOT_STICKY
@@ -54,7 +54,7 @@ class VoiceService : Service() {
 
     override fun onDestroy() {
         session?.stop()
-        VisionCore.state.value = LiveState.Disconnected
+        StarCore.state.value = LiveState.Disconnected
         super.onDestroy()
     }
 
@@ -62,7 +62,7 @@ class VoiceService : Service() {
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(NotificationChannel("star", "Star", NotificationManager.IMPORTANCE_LOW))
         val pi = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE)
-        return Notification.Builder(this, "vision")
+        return Notification.Builder(this, "star")
             .setContentTitle("Star is listening")
             .setSmallIcon(android.R.drawable.ic_btn_speak_now)
             .setContentIntent(pi)

@@ -11,7 +11,7 @@ Star is an Android app with Gemini-powered live voice conversation, text chat, a
 2. Choose a supported voice.
 3. Open Voice and tap the central control to start a live conversation, or use Chat for text and speech input.
 
-The app does not include accessibility-based screen reading, tapping, typing, app launching, or system/media control. Android requires a foreground-service notification while the microphone session is active.
+Star does not include accessibility-based screen reading, tapping, typing, app launching, or system/media control. Android requires a foreground-service notification while the microphone session is active.
 
 ## Project notes
 - `Persona.kt`: Star's personality prompt.

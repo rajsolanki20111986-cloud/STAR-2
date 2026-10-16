@@ -299,7 +299,7 @@ fun SettingsScreen() {
         Text("Your API key is stored in encrypted app preferences. Keep it private.", fontSize = 12.sp, color = Color.Gray)
         HorizontalDivider()
         Text("Notification Assistant", fontSize = 20.sp)
-        Text("Only messages matching names you add below are eligible. Android requires you to grant Notification Access. Auto-replies can be wrong, so start with approval mode in a future test.", fontSize = 12.sp, color = Color.Gray)
+        Text("Only messages matching names you add below are eligible. Android requires you to grant Notification Access. Eligible notifications may receive automatic AI replies. Test with a trusted contact first; replies are sent only when Android exposes a direct-reply action.", fontSize = 12.sp, color = Color.Gray)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Enable notification assistant", modifier = Modifier.weight(1f))
             Switch(checked = notificationEnabled, onCheckedChange = { notificationEnabled = it; Prefs.notificationAssistantEnabled = it })

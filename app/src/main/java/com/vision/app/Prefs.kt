@@ -28,4 +28,20 @@ object Prefs {
         get() = sp.getString("voice", "Charon") ?: "Charon"
         set(v) = sp.edit().putString("voice", v.trim()).apply()
 
+    var notificationAssistantEnabled: Boolean
+        get() = sp.getBoolean("notification_assistant_enabled", false)
+        set(v) = sp.edit().putBoolean("notification_assistant_enabled", v).apply()
+
+    var instagramReplyNames: String
+        get() = sp.getString("instagram_reply_names", "") ?: ""
+        set(v) = sp.edit().putString("instagram_reply_names", v).apply()
+
+    var whatsappReplyNames: String
+        get() = sp.getString("whatsapp_reply_names", "") ?: ""
+        set(v) = sp.edit().putString("whatsapp_reply_names", v).apply()
+
+    fun namesFor(platform: String): List<String> {
+        val raw = if (platform.equals("Instagram", true)) instagramReplyNames else whatsappReplyNames
+        return raw.lines().map { it.trim().removePrefix("@").lowercase() }.filter { it.isNotBlank() }.distinct()
+    }
 }

@@ -278,6 +278,9 @@ fun SettingsScreen() {
     val context = LocalContext.current
     var key by remember { mutableStateOf(Prefs.apiKey) }
     var voice by remember { mutableStateOf(Prefs.voice) }
+    var notificationEnabled by remember { mutableStateOf(Prefs.notificationAssistantEnabled) }
+    var instagramNames by remember { mutableStateOf(Prefs.instagramReplyNames) }
+    var whatsappNames by remember { mutableStateOf(Prefs.whatsappReplyNames) }
     Column(
         Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -299,24 +302,24 @@ fun SettingsScreen() {
         Text("Only messages matching names you add below are eligible. Android requires you to grant Notification Access. Auto-replies can be wrong, so start with approval mode in a future test.", fontSize = 12.sp, color = Color.Gray)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Enable notification assistant", modifier = Modifier.weight(1f))
-            Switch(checked = Prefs.notificationAssistantEnabled, onCheckedChange = { Prefs.notificationAssistantEnabled = it })
+            Switch(checked = notificationEnabled, onCheckedChange = { notificationEnabled = it; Prefs.notificationAssistantEnabled = it })
         }
         OutlinedTextField(
-            value = Prefs.instagramReplyNames,
-            onValueChange = { Prefs.instagramReplyNames = it },
+            value = instagramNames,
+            onValueChange = { instagramNames = it; Prefs.instagramReplyNames = it },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Instagram usernames (one per line)") },
             minLines = 2
         )
         OutlinedTextField(
-            value = Prefs.whatsappReplyNames,
-            onValueChange = { Prefs.whatsappReplyNames = it },
+            value = whatsappNames,
+            onValueChange = { whatsappNames = it; Prefs.whatsappReplyNames = it },
             modifier = Modifier.fillMaxWidth(),
             label = { Text("WhatsApp contact names (one per line)") },
             minLines = 2
         )
         Button(onClick = {
-            runCatching { startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+            runCatching { context.startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
                 .onFailure { Toast.makeText(context, "Open Android Settings > Notification access and enable Star.", Toast.LENGTH_LONG).show() }
         }) { Text("Grant Notification Access") }
     }

@@ -62,6 +62,11 @@ class NotificationReplyService : NotificationListenerService() {
                 val threadKey = "$platform:$senderKey"
                 val context = synchronized(recent) { recent[threadKey]?.takeLast(8)?.joinToString("\n").orEmpty() }
                 val reply = ChatEngine.notificationReply(platform, sender, message, context)
+                if (reply == "API_ERROR") {
+                    // Permit a later notification update to retry after a transient API failure.
+                    repliedKeys.remove(notificationKey)
+                    return@launch
+                }
                 if (reply.isBlank() || reply == "NO_REPLY" || reply.length > 700) return@launch
                 sendReply(action, reply)
                 synchronized(recent) {
@@ -84,7 +89,7 @@ class NotificationReplyService : NotificationListenerService() {
             action.remoteInputs?.any { it.allowFreeFormInput } == true &&
                 action.title?.toString()?.let {
                     it.contains("reply", true) || it.contains("respond", true) ||
-                        it.contains("जवाब") || it.contains("उत्तर") || it.contains("reply", true)
+                        it.contains("जवाब") || it.contains("उत्तर")
                 } == true
         }
     }

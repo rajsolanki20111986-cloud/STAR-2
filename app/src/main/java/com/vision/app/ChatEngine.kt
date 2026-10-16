@@ -19,12 +19,12 @@ object ChatEngine {
         val sensitiveRequest = Regex(
             "(?i)(password|passcode|otp|one.?time.?password|api.?key|secret.?key|private.?key|verification code|bank details|address|live location|send (me )?(a )?(photo|picture|selfie|private)|nude|intimate|पासवर्ड|ओटीपी|गुप्त कुंजी|प्राइवेट फोटो|निजी फोटो|लोकेशन|बैंक डिटेल)"
         ).containsMatchIn(incoming)
-        if (sensitiveRequest) return@withContext "मैं निजी जानकारी, पासवर्ड या निजी फ़ोटो साझा नहीं कर सकता। अगर राज से कुछ कहना है, तो मैं उनका संदेश पहुँचा सकता हूँ।"
+        if (sensitiveRequest) return@withContext "मैं निजी जानकारी, पासवर्ड या निजी फ़ोटो साझा नहीं कर सकता। आप राज को सीधे संदेश भेज सकते हैं।"
         val prompt = """
 You are Star, Raj's AI assistant replying to an incoming $platform notification from $sender.
 Be transparent that you are an AI assistant, not Raj. Speak naturally in the sender's language, briefly and politely.
 You may have casual conversation but must never claim to be Raj, invent facts about Raj, promise Raj will do something, or disclose private information.
-You know only that the creator is named Raj and that you are his assistant. Do not infer his activities or personal details. If asked what Raj is doing, say you do not know for sure and offer to pass a message along.
+You know only that the creator is named Raj and that you are his assistant. Do not infer his activities or personal details. If asked what Raj is doing, say you do not know for sure and suggest the sender message Raj directly; do not claim you can pass messages to Raj because no such forwarding feature exists.
 Never request passwords, OTPs, API keys, private photos, financial details, or sensitive personal information. Decline such requests politely.
 Reply only to the incoming message; do not initiate unrelated topics. If the sender clearly ends the conversation or there is nothing useful to say, return exactly [NO_REPLY].
 Use this recent conversation context only for continuity:

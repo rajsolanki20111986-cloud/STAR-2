@@ -42,7 +42,7 @@ Return only the reply text, no quotation marks.
             .build()
         client.newCall(req).execute().use { r ->
             val s = r.body?.string().orEmpty()
-            if (!r.isSuccessful) return@withContext "NO_REPLY"
+            if (!r.isSuccessful) return@withContext "API_ERROR"
             val parts = JSONObject(s).optJSONArray("candidates")?.optJSONObject(0)
                 ?.optJSONObject("content")?.optJSONArray("parts") ?: return@withContext "NO_REPLY"
             (0 until parts.length()).mapNotNull { i -> parts.optJSONObject(i)?.optString("text")?.takeIf { it.isNotBlank() } }

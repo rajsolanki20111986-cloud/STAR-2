@@ -14,6 +14,42 @@ object ChatEngine {
     private const val MODEL = "gemini-flash-latest" // change here if you want a specific model
     private val client = OkHttpClient.Builder().connectTimeout(20, java.util.concurrent.TimeUnit.SECONDS).readTimeout(45, java.util.concurrent.TimeUnit.SECONDS).callTimeout(60, java.util.concurrent.TimeUnit.SECONDS).retryOnConnectionFailure(true).build()
 
+    suspend fun notificationReply(platform: String, sender: String, incoming: String, recentContext: String): String = withContext(Dispatchers.IO) {
+        require(Prefs.apiKey.isNotBlank()) { "NO_REPLY" }
+        val sensitiveRequest = Regex(
+            "(?i)(password|passcode|otp|one.?time.?password|api.?key|secret.?key|private.?key|verification code|bank details|address|live location|send (me )?(a )?(photo|picture|selfie|private)|nude|intimate|पासवर्ड|ओटीपी|गुप्त कुंजी|प्राइवेट फोटो|निजी फोटो|लोकेशन|बैंक डिटेल)"
+        ).containsMatchIn(incoming)
+        if (sensitiveRequest) return@withContext "मैं निजी जानकारी, पासवर्ड या निजी फ़ोटो साझा नहीं कर सकता। अगर राज से कुछ कहना है, तो मैं उनका संदेश पहुँचा सकता हूँ।"
+        val prompt = """
+You are Star, Raj's AI assistant replying to an incoming $platform notification from $sender.
+Be transparent that you are an AI assistant, not Raj. Speak naturally in the sender's language, briefly and politely.
+You may have casual conversation but must never claim to be Raj, invent facts about Raj, promise Raj will do something, or disclose private information.
+You know only that the creator is named Raj and that you are his assistant. Do not infer his activities or personal details. If asked what Raj is doing, say you do not know for sure and offer to pass a message along.
+Never request passwords, OTPs, API keys, private photos, financial details, or sensitive personal information. Decline such requests politely.
+Reply only to the incoming message; do not initiate unrelated topics. If the sender clearly ends the conversation or there is nothing useful to say, return exactly [NO_REPLY].
+Use this recent conversation context only for continuity:
+$recentContext
+Incoming message: $incoming
+Return only the reply text, no quotation marks.
+""".trimIndent()
+        val body = JSONObject()
+            .put("systemInstruction", JSONObject().put("parts", JSONArray().put(JSONObject().put("text", prompt))))
+            .put("contents", JSONArray().put(JSONObject().put("role", "user").put("parts", JSONArray().put(JSONObject().put("text", incoming)))))
+        val req = Request.Builder()
+            .url("https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent")
+            .header("x-goog-api-key", Prefs.apiKey)
+            .post(body.toString().toRequestBody("application/json".toMediaType()))
+            .build()
+        client.newCall(req).execute().use { r ->
+            val s = r.body?.string().orEmpty()
+            if (!r.isSuccessful) return@withContext "NO_REPLY"
+            val parts = JSONObject(s).optJSONArray("candidates")?.optJSONObject(0)
+                ?.optJSONObject("content")?.optJSONArray("parts") ?: return@withContext "NO_REPLY"
+            (0 until parts.length()).mapNotNull { i -> parts.optJSONObject(i)?.optString("text")?.takeIf { it.isNotBlank() } }
+                .joinToString("\n").trim().takeIf { it.isNotBlank() && !it.contains("[NO_REPLY]") } ?: "NO_REPLY"
+        }
+    }
+
     suspend fun reply(history: List<Pair<Boolean, String>>): String = withContext(Dispatchers.IO) {
         require(Prefs.apiKey.isNotBlank()) { "Add your Gemini API key in Settings first." }
         val contents = JSONArray()

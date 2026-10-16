@@ -275,6 +275,7 @@ fun listen(ctx: Context, onText: (String) -> Unit) {
 
 @Composable
 fun SettingsScreen() {
+    val context = LocalContext.current
     var key by remember { mutableStateOf(Prefs.apiKey) }
     var voice by remember { mutableStateOf(Prefs.voice) }
     Column(
@@ -293,5 +294,30 @@ fun SettingsScreen() {
             label = { Text("Voice (Charon, Puck, Kore, Fenrir, Orus…)" ) }, singleLine = true
         )
         Text("Your API key is stored in encrypted app preferences. Keep it private.", fontSize = 12.sp, color = Color.Gray)
+        HorizontalDivider()
+        Text("Notification Assistant", fontSize = 20.sp)
+        Text("Only messages matching names you add below are eligible. Android requires you to grant Notification Access. Auto-replies can be wrong, so start with approval mode in a future test.", fontSize = 12.sp, color = Color.Gray)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Enable notification assistant", modifier = Modifier.weight(1f))
+            Switch(checked = Prefs.notificationAssistantEnabled, onCheckedChange = { Prefs.notificationAssistantEnabled = it })
+        }
+        OutlinedTextField(
+            value = Prefs.instagramReplyNames,
+            onValueChange = { Prefs.instagramReplyNames = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Instagram usernames (one per line)") },
+            minLines = 2
+        )
+        OutlinedTextField(
+            value = Prefs.whatsappReplyNames,
+            onValueChange = { Prefs.whatsappReplyNames = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("WhatsApp contact names (one per line)") },
+            minLines = 2
+        )
+        Button(onClick = {
+            runCatching { startActivity(Intent(android.provider.Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
+                .onFailure { Toast.makeText(context, "Open Android Settings > Notification access and enable Star.", Toast.LENGTH_LONG).show() }
+        }) { Text("Grant Notification Access") }
     }
 }
